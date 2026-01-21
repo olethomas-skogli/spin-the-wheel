@@ -327,6 +327,30 @@ window.handleLogin = handleLogin;
 window.handleLogout = handleLogout;
 
 // ===================================
+// Mobile Menu Functions
+// ===================================
+
+/**
+ * Toggle mobile menu open/closed
+ */
+function toggleMobileMenu() {
+    document.getElementById('nav-links').classList.toggle('open');
+    document.getElementById('hamburger-btn').classList.toggle('open');
+}
+
+/**
+ * Close mobile menu
+ */
+function closeMobileMenu() {
+    document.getElementById('nav-links').classList.remove('open');
+    document.getElementById('hamburger-btn').classList.remove('open');
+}
+
+// Make mobile menu functions globally available
+window.toggleMobileMenu = toggleMobileMenu;
+window.closeMobileMenu = closeMobileMenu;
+
+// ===================================
 // Player Selection Functions
 // ===================================
 

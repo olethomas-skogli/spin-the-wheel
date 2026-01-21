@@ -13,15 +13,22 @@
     <div class="app">
         <!-- Navigation (hidden on login screen) -->
         <nav class="main-nav hidden" id="main-nav">
-            <button class="nav-btn active" data-screen="setup" onclick="Navigation.goto('setup')">
-                Game
+            <button class="hamburger" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
             </button>
-            <button class="nav-btn" data-screen="stats" onclick="Navigation.goto('stats')">
-                Statistics
-            </button>
-            <button class="nav-btn nav-btn-logout" id="logout-btn" onclick="handleLogout()">
-                Logout
-            </button>
+            <div class="nav-links" id="nav-links">
+                <button class="nav-btn active" data-screen="setup" onclick="Navigation.goto('setup'); closeMobileMenu();">
+                    Game
+                </button>
+                <button class="nav-btn" data-screen="stats" onclick="Navigation.goto('stats'); closeMobileMenu();">
+                    Statistics
+                </button>
+                <button class="nav-btn nav-btn-logout" id="logout-btn" onclick="handleLogout(); closeMobileMenu();">
+                    Logout
+                </button>
+            </div>
         </nav>
 
         <!-- Login Screen -->
