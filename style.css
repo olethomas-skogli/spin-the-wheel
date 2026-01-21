@@ -118,9 +118,11 @@ body {
    =================================== */
 #setup-screen {
     min-height: 100vh;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: flex-start;
     align-items: center;
     padding: var(--space-lg);
+    gap: var(--space-xl);
 }
 
 .setup-container {
@@ -131,6 +133,15 @@ body {
     max-width: 500px;
     width: 100%;
     text-align: center;
+}
+
+.setup-leaderboard {
+    width: 100%;
+    max-width: 600px;
+}
+
+.setup-leaderboard .stats-section {
+    margin-bottom: 0;
 }
 
 .title {
@@ -286,6 +297,8 @@ body {
     flex-direction: column;
     min-height: 100vh;
     padding: var(--space-lg);
+    padding-top: var(--space-2xl);
+    justify-content: center;
 }
 
 .game-header {
@@ -526,26 +539,26 @@ body {
 
 .results-container {
     text-align: center;
-    max-width: 700px;
+    max-width: 1400px;
     width: 100%;
 }
 
 .results-title {
-    font-size: 2.5rem;
+    font-size: 5rem;
     color: var(--color-primary);
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-md);
 }
 
 .results-subtitle {
     color: var(--color-gray-600);
-    font-size: 1.125rem;
+    font-size: 2.25rem;
     margin-bottom: var(--space-2xl);
 }
 
 .results-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--space-lg);
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: var(--space-2xl);
     margin-bottom: var(--space-2xl);
 }
 
@@ -553,7 +566,7 @@ body {
     background: var(--color-white);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-lg);
-    padding: var(--space-xl);
+    padding: var(--space-2xl) var(--space-xl);
     animation: cardEntry 0.5s ease-out backwards;
 }
 
@@ -573,21 +586,21 @@ body {
 }
 
 .result-card .player-name {
-    font-size: 1.25rem;
+    font-size: 2.5rem;
     font-weight: var(--font-weight-bold);
     color: var(--color-gray-900);
-    margin-bottom: var(--space-md);
+    margin-bottom: var(--space-lg);
 }
 
 .result-card .punishment-value {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 80px;
-    height: 80px;
+    width: 160px;
+    height: 160px;
     background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
     color: var(--color-white);
-    font-size: 1.5rem;
+    font-size: 3rem;
     font-weight: var(--font-weight-bold);
     border-radius: var(--radius-full);
     box-shadow: var(--shadow-md);
@@ -1148,9 +1161,21 @@ body {
 }
 
 .stats-container {
-    max-width: 900px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: var(--space-xl);
+}
+
+#stats-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+}
+
+@media (min-width: 768px) {
+    #stats-content {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .stats-section {
@@ -1158,7 +1183,6 @@ body {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
     padding: var(--space-lg);
-    margin-bottom: var(--space-lg);
 }
 
 .section-title {
@@ -1172,8 +1196,14 @@ body {
 /* Summary Grid */
 .summary-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: 1fr;
     gap: var(--space-md);
+}
+
+@media (min-width: 768px) {
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .summary-card {

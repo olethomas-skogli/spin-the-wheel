@@ -27,7 +27,13 @@ function initSupabase() {
     }
 
     if (typeof window.supabase !== 'undefined') {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                persistSession: true,
+                storageKey: 'union-wheel-auth',
+                storage: window.localStorage
+            }
+        });
         return true;
     }
 
@@ -506,6 +512,18 @@ const AuthService = {
     async getCurrentUser() {
         const session = await this.getSession();
         return session?.user || null;
+    },
+
+    /**
+     * Listen for auth state changes
+     * @param {Function} callback - Called with (event, session)
+     * @returns {Object} Subscription object with unsubscribe method
+     */
+    onAuthStateChange(callback) {
+        if (!isSupabaseConnected()) return { unsubscribe: () => {} };
+
+        const { data: { subscription } } = supabaseClient.auth.onAuthStateChange(callback);
+        return subscription;
     }
 };
 

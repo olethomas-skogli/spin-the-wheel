@@ -297,7 +297,20 @@ async function initAuth() {
         return;
     }
 
-    // Check for existing session
+    // Listen for auth state changes (handles session restoration from localStorage)
+    SupabaseDB.auth.onAuthStateChange((event, session) => {
+        console.log('Auth state changed:', event);
+
+        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+            if (session) {
+                Navigation.goto('setup');
+            }
+        } else if (event === 'SIGNED_OUT') {
+            Navigation.goto('login');
+        }
+    });
+
+    // Check for existing session (fallback)
     const session = await SupabaseDB.auth.getSession();
 
     if (session) {
@@ -566,6 +579,10 @@ class GameController {
             Elements.playerSelection.classList.remove('hidden');
             Elements.manualInput.classList.add('hidden');
             await this.loadPlayersFromDB();
+            // Load leaderboard on setup screen
+            if (window.StatsController?.loadSetupLeaderboard) {
+                StatsController.loadSetupLeaderboard();
+            }
         } else {
             // Show manual input mode
             Elements.playerSelection.classList.add('hidden');

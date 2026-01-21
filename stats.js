@@ -16,6 +16,30 @@ const StatsController = {
     },
 
     /**
+     * Load just the leaderboard (for setup screen)
+     */
+    async loadSetupLeaderboard() {
+        if (!window.SupabaseDB?.isConnected()) {
+            const container = document.getElementById('setup-leaderboard');
+            if (container) {
+                container.innerHTML = '<p class="empty-state">Connect to database to view leaderboard</p>';
+            }
+            return;
+        }
+
+        try {
+            const playerStats = await window.SupabaseDB.stats.getPlayerStats();
+            this.renderLeaderboard(playerStats, 'setup-leaderboard');
+        } catch (error) {
+            console.error('Error loading setup leaderboard:', error);
+            const container = document.getElementById('setup-leaderboard');
+            if (container) {
+                container.innerHTML = '<p class="empty-state">Error loading leaderboard</p>';
+            }
+        }
+    },
+
+    /**
      * Load and display all statistics
      */
     async loadStats() {
@@ -151,14 +175,29 @@ const StatsController = {
     /**
      * Render the leaderboard
      * @param {Array} playerStats - Array of player statistics
+     * @param {string} containerId - Optional specific container ID
      */
-    renderLeaderboard(playerStats) {
-        const container = document.getElementById('stats-leaderboard');
-        if (!container) return;
+    renderLeaderboard(playerStats, containerId = null) {
+        const containerIds = containerId ? [containerId] : ['stats-leaderboard', 'setup-leaderboard'];
 
+        const html = this.generateLeaderboardHtml(playerStats);
+
+        containerIds.forEach(id => {
+            const container = document.getElementById(id);
+            if (container) {
+                container.innerHTML = html;
+            }
+        });
+    },
+
+    /**
+     * Generate leaderboard HTML
+     * @param {Array} playerStats - Array of player statistics
+     * @returns {string} HTML string
+     */
+    generateLeaderboardHtml(playerStats) {
         if (playerStats.length === 0) {
-            container.innerHTML = '<p class="empty-state">No games played yet</p>';
-            return;
+            return '<p class="empty-state">No games played yet</p>';
         }
 
         const rows = playerStats.map((player, index) => {
@@ -177,7 +216,7 @@ const StatsController = {
             `;
         }).join('');
 
-        container.innerHTML = `
+        return `
             <table class="leaderboard-table">
                 <thead>
                     <tr>
