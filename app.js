@@ -16,7 +16,8 @@ const GameState = {
     currentRound: 1,
     currentSpin: 0,
     isSpinning: false,
-    isDbConnected: false
+    isDbConnected: false,
+    isTestMode: false
 };
 
 // ===================================
@@ -123,6 +124,7 @@ const Elements = {
     // Setup - Common
     playerCountDisplay: document.getElementById('player-count-display'),
     startBtn: document.getElementById('start-btn'),
+    testBtn: document.getElementById('test-btn'),
 
     // Game
     roundTitle: document.getElementById('round-title'),
@@ -681,7 +683,8 @@ class GameController {
         if (Elements.playerInput) {
             Elements.playerInput.addEventListener('input', () => this.updatePlayerCount());
         }
-        Elements.startBtn.addEventListener('click', () => this.startGame());
+        Elements.startBtn.addEventListener('click', () => this.startGame(false));
+        Elements.testBtn.addEventListener('click', () => this.startGame(true));
         Elements.spinBtn.addEventListener('click', () => this.handleSpin());
         Elements.playAgainBtn.addEventListener('click', () => this.resetGame());
         Elements.modalContinueBtn.addEventListener('click', () => this.closeModal());
@@ -731,14 +734,16 @@ class GameController {
 
         Elements.playerCountDisplay.textContent = `${count} player${count !== 1 ? 's' : ''} selected`;
         Elements.startBtn.disabled = count < 3;
+        Elements.testBtn.disabled = count < 3;
     }
 
     /**
      * Start the game
+     * @param {boolean} testMode - If true, results won't be saved to database
      */
-    async startGame() {
-        // Check auth if Supabase is connected
-        if (GameState.isDbConnected && window.SupabaseDB && window.SupabaseDB.auth) {
+    async startGame(testMode = false) {
+        // Check auth if Supabase is connected (skip for test mode)
+        if (!testMode && GameState.isDbConnected && window.SupabaseDB && window.SupabaseDB.auth) {
             const session = await SupabaseDB.auth.getSession();
             if (!session) {
                 alert('Admin login required');
@@ -761,6 +766,7 @@ class GameController {
         GameState.assignedPunishments = [];
         GameState.currentRound = 1;
         GameState.currentSpin = 0;
+        GameState.isTestMode = testMode;
 
         // Set up the wheel with players
         this.wheel.setSegments(GameState.remainingPlayers);
@@ -934,13 +940,15 @@ class GameController {
      * Update the round display
      */
     updateRoundDisplay() {
+        const testPrefix = GameState.isTestMode ? '🧪 TEST MODE - ' : '';
+
         if (GameState.currentRound === 1) {
-            Elements.roundTitle.textContent = 'Round 1: Select Players';
+            Elements.roundTitle.textContent = `${testPrefix}Round 1: Select Players`;
             Elements.roundSubtitle.textContent = `Spin to select 3 players for fine🤑 (${GameState.currentSpin}/3)`;
             this.updateCurrentAction('Ready to spin', 'Click the button to select a player');
             Elements.punishmentSection.classList.add('hidden');
         } else {
-            Elements.roundTitle.textContent = 'Round 2: Expensive Fines';
+            Elements.roundTitle.textContent = `${testPrefix}Round 2: Expensive Fines`;
             const currentPlayer = GameState.selectedPlayers[GameState.currentSpin] || '';
             Elements.roundSubtitle.textContent = `Assigning punishment ${GameState.currentSpin + 1}/3`;
             this.updateCurrentAction(`${currentPlayer}'s Turn`, 'Click to spin for their fines');
@@ -1019,7 +1027,12 @@ class GameController {
      * Save game results to database
      */
     async saveGameResults() {
-        if (!GameState.isDbConnected) return;
+        if (!GameState.isDbConnected || GameState.isTestMode) {
+            if (GameState.isTestMode) {
+                console.log('Test mode - results not saved');
+            }
+            return;
+        }
 
         try {
             await SupabaseDB.games.saveGame(GameState.assignedPunishments);
@@ -1060,6 +1073,7 @@ class GameController {
         GameState.currentRound = 1;
         GameState.currentSpin = 0;
         GameState.isSpinning = false;
+        GameState.isTestMode = false;
 
         // Reset UI
         Elements.spinBtn.disabled = false;

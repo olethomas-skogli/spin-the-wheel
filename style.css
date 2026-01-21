@@ -135,6 +135,13 @@ body {
     text-align: center;
 }
 
+.setup-actions {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
 .setup-leaderboard {
     width: 100%;
     max-width: 600px;
