@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Union Wheel of Fortune</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="app">
+        <!-- Navigation (hidden on login screen) -->
+        <nav class="main-nav hidden" id="main-nav">
+            <button class="nav-btn active" data-screen="setup" onclick="Navigation.goto('setup')">
+                Game
+            </button>
+            <button class="nav-btn" data-screen="stats" onclick="Navigation.goto('stats')">
+                Statistics
+            </button>
+            <button class="nav-btn nav-btn-logout" id="logout-btn" onclick="handleLogout()">
+                Logout
+            </button>
+        </nav>
+
+        <!-- Login Screen -->
+        <section id="login-screen" class="screen active">
+            <div class="login-container">
+                <h1 class="title">Union Wheel of Fortune</h1>
+                <h2 class="login-subtitle">Admin Login</h2>
+                <form id="login-form" onsubmit="handleLogin(event)">
+                    <div class="login-field">
+                        <input type="email" id="login-email" placeholder="Email" required autocomplete="email">
+                    </div>
+                    <div class="login-field">
+                        <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-login">Login</button>
+                    <p id="login-error" class="login-error"></p>
+                </form>
+            </div>
+        </section>
+
+        <!-- Setup Screen -->
+        <section id="setup-screen" class="screen">
+            <div class="setup-container">
+                <h1 class="title">Union Wheel of Fortune⚙️</h1>
+                <p class="subtitle">See you in Vegas 🚀</p>
+
+                <!-- Database Status -->
+                <div id="db-status" class="db-status">
+                    <span class="status-indicator offline"></span>
+                    <span class="status-text">Checking connection...</span>
+                </div>
+
+                <!-- Player Selection (from database) -->
+                <div id="player-selection" class="player-selection">
+                    <div class="selection-header">
+                        <h3>Select Players</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="openPlayerManagement()">
+                            Manage squad
+                        </button>
+                    </div>
+
+                    <!-- Search and Quick Actions -->
+                    <div class="player-toolbar">
+                        <div class="search-box">
+                            <input type="text" id="player-search" placeholder="Search squad..." autocomplete="off">
+                        </div>
+                        <div class="quick-actions">
+                            <button class="btn btn-outline btn-sm" onclick="selectAllPlayers()">Select All</button>
+                            <button class="btn btn-outline btn-sm" onclick="deselectAllPlayers()">Deselect All</button>
+                        </div>
+                    </div>
+
+                    <div id="active-players-list" class="active-players-list">
+                        <p class="loading-text">Loading Union squad...</p>
+                    </div>
+
+                    <div class="player-count">
+                        <span id="player-count-display">0 players selected</span>
+                    </div>
+                </div>
+
+                <!-- Fallback: Manual Input (shown when DB not connected) -->
+                <div id="manual-input" class="input-group hidden">
+                    <label for="player-input">Squad Names</label>
+                    <textarea
+                        id="player-input"
+                        placeholder="Enter names separated by commas or new lines...&#10;&#10;Example:&#10;John, Jane, Bob&#10;Alice&#10;Charlie"
+                        rows="10"
+                        aria-describedby="input-hint"
+                    ></textarea>
+                    <small id="input-hint" class="hint">Minimum 3 players required (Database not connected)</small>
+                </div>
+
+                <button id="start-btn" class="btn btn-primary" disabled>
+                    Start Game
+                </button>
+            </div>
+        </section>
+
+        <!-- Stats Screen -->
+        <section id="stats-screen" class="screen">
+            <div class="stats-container">
+                <h1 class="title">Statistics</h1>
+                <p class="subtitle">Player rankings and game history</p>
+
+                <div id="stats-content">
+                    <!-- Summary Cards -->
+                    <div class="stats-section">
+                        <h3 class="section-title">Overview</h3>
+                        <div id="stats-summary" class="summary-grid">
+                            <!-- Filled dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Leaderboard -->
+                    <div class="stats-section">
+                        <h3 class="section-title">Leaderboard</h3>
+                        <div id="stats-leaderboard" class="leaderboard-container">
+                            <!-- Filled dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Punishment Distribution -->
+                    <div class="stats-section">
+                        <h3 class="section-title">Fine Distribution</h3>
+                        <div id="stats-distribution" class="distribution-container">
+                            <!-- Filled dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Recent Games -->
+                    <div class="stats-section">
+                        <h3 class="section-title">Recent Games</h3>
+                        <div id="stats-recent-games" class="recent-games-container">
+                            <!-- Filled dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Game Screen -->
+        <section id="game-screen" class="screen">
+            <header class="game-header">
+                <h2 id="round-title">Round 1: Select Players</h2>
+                <p id="round-subtitle" class="round-info">Spin to select 3 players for fines</p>
+            </header>
+
+            <div class="game-layout">
+                <!-- Wheel Container -->
+                <div class="wheel-container">
+                    <div class="wheel-wrapper">
+                        <div class="pointer" aria-hidden="true"></div>
+                        <canvas id="wheel-canvas" width="850" height="850"></canvas>
+                        <div class="wheel-center">
+                            <div class="logo" aria-label="Logo space">
+                                <img src="logo-union.png" alt="union-logo"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="spin-btn" class="btn btn-spin">
+                        SPIN
+                    </button>
+                </div>
+
+                <!-- Info Panel -->
+                <aside class="info-panel">
+                    <div class="current-action" id="current-action">
+                        <h3>Ready to spin</h3>
+                        <p>Click the button to start</p>
+                    </div>
+
+                    <div class="selection-list">
+                        <h4>Selected Players</h4>
+                        <ul id="selected-players" aria-live="polite">
+                            <li class="empty-slot">Waiting...</li>
+                            <li class="empty-slot">Waiting...</li>
+                            <li class="empty-slot">Waiting...</li>
+                        </ul>
+                    </div>
+
+                    <div class="punishment-list hidden" id="punishment-section">
+                        <h4>Assigned Fines</h4>
+                        <ul id="assigned-punishments" aria-live="polite">
+                            <!-- Filled dynamically -->
+                        </ul>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <!-- Results Screen -->
+        <section id="results-screen" class="screen">
+            <div class="results-container">
+                <h2 class="results-title">Final Results</h2>
+                <p class="results-subtitle">The fines have been decided!💸🤑</p>
+
+                <div class="results-cards" id="results-cards">
+                    <!-- Filled dynamically -->
+                </div>
+
+                <div class="results-actions">
+                    <button id="play-again-btn" class="btn btn-primary">
+                        Play Again🤔
+                    </button>
+                    <button id="view-stats-btn" class="btn btn-secondary" onclick="Navigation.goto('stats')">
+                        View Statistics📈
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Result Modal -->
+    <div id="result-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-content">
+            <h3 id="modal-title">Result</h3>
+            <p id="modal-message"></p>
+            <button id="modal-continue-btn" class="btn btn-primary">Continue</button>
+        </div>
+    </div>
+
+    <!-- Player Management Modal -->
+    <div id="player-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="player-modal-title">
+        <div class="modal-content modal-xl">
+            <div class="modal-header">
+                <h3 id="player-modal-title">Manage Union squad</h3>
+                <button class="btn-close" onclick="closePlayerManagement()">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Add Player Form -->
+                <div class="add-player-form">
+                    <input type="text" id="new-player-name" placeholder="Enter new player name..." maxlength="50">
+                    <button class="btn btn-primary" onclick="PlayerManagement.addPlayer()">Add Player</button>
+                </div>
+
+                <div id="player-message" class="player-message" style="display: none;"></div>
+
+                <!-- Search and Stats -->
+                <div class="modal-toolbar">
+                    <div class="search-box">
+                        <input type="text" id="manage-player-search" placeholder="Search players..." autocomplete="off">
+                    </div>
+                    <div class="player-stats-mini">
+                        <span id="modal-player-count">0 players</span>
+                    </div>
+                </div>
+
+                <!-- Player List -->
+                <div class="player-list-container">
+                    <div id="player-list" class="player-list player-grid">
+                        <!-- Filled dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closePlayerManagement()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <p>⚠️This game uses cryptographically secure randomness powered by the Web Crypto API (crypto.getRandomValues). Each selection is generated from your device's true entropy source with rejection sampling to ensure mathematically perfect uniform distribution — the same standard used in secure lottery systems.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="supabase.js"></script>
+    <script src="stats.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
