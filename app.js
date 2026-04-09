@@ -357,6 +357,14 @@ window.closeMobileMenu = closeMobileMenu;
 /**
  * Select all visible players
  */
+function togglePlayerSelection() {
+    const body = document.getElementById('player-selection-body');
+    const btn = document.getElementById('toggle-players-btn');
+    const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', !isExpanded);
+    body.classList.toggle('collapsed', isExpanded);
+}
+
 function selectAllPlayers() {
     const checkboxes = Elements.activePlayersList.querySelectorAll('.player-checkbox:not(.hidden) input[type="checkbox"]');
     checkboxes.forEach(checkbox => {
@@ -404,6 +412,7 @@ function filterPlayers(searchTerm) {
 window.selectAllPlayers = selectAllPlayers;
 window.deselectAllPlayers = deselectAllPlayers;
 window.filterPlayers = filterPlayers;
+window.togglePlayerSelection = togglePlayerSelection;
 
 // ===================================
 // Wheel Renderer
@@ -713,6 +722,14 @@ class GameController {
         Elements.playAgainBtn.addEventListener('click', () => this.resetGame());
         Elements.modalContinueBtn.addEventListener('click', () => this.closeModal());
 
+        // Exit game button
+        const exitGameBtn = document.getElementById('exit-game-btn');
+        if (exitGameBtn) {
+            exitGameBtn.addEventListener('click', () => {
+                this.showScreen('setup');
+            });
+        }
+
         // Handle Enter key in player name input
         const newPlayerInput = document.getElementById('new-player-name');
         if (newPlayerInput) {
@@ -756,7 +773,7 @@ class GameController {
         const players = this.getSelectedPlayers();
         const count = players.length;
 
-        Elements.playerCountDisplay.textContent = `${count} player${count !== 1 ? 's' : ''} selected`;
+        Elements.playerCountDisplay.textContent = `${count} selected`;
         Elements.startBtn.disabled = count < 3;
         Elements.testBtn.disabled = count < 3;
     }
@@ -1139,6 +1156,9 @@ class GameController {
         Elements.navButtons.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.screen === screenName);
         });
+
+        // Toggle fullscreen game mode
+        document.body.classList.toggle('game-active', screenName === 'game');
     }
 
     /**

@@ -65,28 +65,34 @@
                 <div id="player-selection" class="player-selection">
                     <div class="selection-header">
                         <h3>Select Players</h3>
-                        <button class="btn btn-secondary btn-sm" onclick="openPlayerManagement()">
-                            Manage squad
-                        </button>
-                    </div>
-
-                    <!-- Search and Quick Actions -->
-                    <div class="player-toolbar">
-                        <div class="search-box">
-                            <input type="text" id="player-search" placeholder="Search squad..." autocomplete="off">
-                        </div>
-                        <div class="quick-actions">
-                            <button class="btn btn-outline btn-sm" onclick="selectAllPlayers()">Select All</button>
-                            <button class="btn btn-outline btn-sm" onclick="deselectAllPlayers()">Deselect All</button>
+                        <div class="selection-header-row">
+                            <span id="player-count-display" class="player-count-badge">0 selected</span>
+                            <div class="selection-header-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="openPlayerManagement()">
+                                    Manage squad
+                                </button>
+                                <button id="toggle-players-btn" class="btn-collapse" aria-expanded="false" aria-controls="player-selection-body" onclick="togglePlayerSelection()">
+                                    <span class="collapse-icon">&#x25B2;</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <div id="active-players-list" class="active-players-list">
-                        <p class="loading-text">Loading Union squad...</p>
-                    </div>
+                    <div id="player-selection-body" class="player-selection-body collapsed">
+                        <!-- Search and Quick Actions -->
+                        <div class="player-toolbar">
+                            <div class="search-box">
+                                <input type="text" id="player-search" placeholder="Search squad..." autocomplete="off">
+                            </div>
+                            <div class="quick-actions">
+                                <button class="btn btn-outline btn-sm" onclick="selectAllPlayers()">Select All</button>
+                                <button class="btn btn-outline btn-sm" onclick="deselectAllPlayers()">Deselect All</button>
+                            </div>
+                        </div>
 
-                    <div class="player-count">
-                        <span id="player-count-display">0 players selected</span>
+                        <div id="active-players-list" class="active-players-list">
+                            <p class="loading-text">Loading Union squad...</p>
+                        </div>
                     </div>
                 </div>
 
@@ -168,6 +174,7 @@
         <!-- Game Screen -->
         <section id="game-screen" class="screen">
             <header class="game-header">
+                <button id="exit-game-btn" class="btn-exit-game" aria-label="Exit game">&#x2715;</button>
                 <h2 id="round-title">Round 1: Select Players</h2>
                 <p id="round-subtitle" class="round-info">Spin to select 3 players for fines</p>
             </header>
@@ -178,16 +185,10 @@
                     <div class="wheel-wrapper">
                         <div class="pointer" aria-hidden="true"></div>
                         <canvas id="wheel-canvas" width="850" height="850"></canvas>
-                        <div class="wheel-center">
-                            <div class="logo" aria-label="Logo space">
-                                <img src="logo-union.png" alt="union-logo"/>
-                            </div>
-                        </div>
+                        <button id="spin-btn" class="btn btn-spin">
+                            SPIN
+                        </button>
                     </div>
-
-                    <button id="spin-btn" class="btn btn-spin">
-                        SPIN
-                    </button>
                 </div>
 
                 <!-- Info Panel -->
